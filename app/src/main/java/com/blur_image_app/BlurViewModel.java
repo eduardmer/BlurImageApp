@@ -2,6 +2,7 @@ package com.blur_image_app;
 
 import static com.blur_image_app.Constants.IMAGE_MANIPULATION_WORK_NAME;
 import static com.blur_image_app.Constants.KEY_IMAGE_URI;
+import static com.blur_image_app.Constants.TAG_OUTPUT;
 import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -17,29 +18,36 @@ import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 import com.blur_image_app.workers.BlurImageWorker;
 import java.util.List;
+
+import javax.inject.Inject;
+
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @HiltViewModel
 public class BlurViewModel extends ViewModel {
 
     private Uri mImageUri;
     private final WorkManager workManager;
-    private final LiveData<List<WorkInfo>> workInfo;
+    public final LiveData<List<WorkInfo>> workInfo;
 
+    @Inject
     public BlurViewModel(Application application){
         this.workManager = WorkManager.getInstance(application);
         mImageUri = getImageUri(application.getApplicationContext());
-        workInfo = workManager.getWorkInfosForUniqueWorkLiveData(IMAGE_MANIPULATION_WORK_NAME);
+        workInfo = workManager.getWorkInfosByTagLiveData(TAG_OUTPUT);
     }
 
     public void applyBlur(int blurLevel){
-        OneTimeWorkRequest.Builder workRequest = new OneTimeWorkRequest.Builder(BlurImageWorker.class);
-        workRequest.setInputData(createInputDataForUri());
+        OneTimeWorkRequest.Builder workRequest = new OneTimeWorkRequest.Builder(BlurImageWorker.class).setInputData(createInputDataForUri());
+        if (blurLevel == 1)
+            workRequest.addTag(TAG_OUTPUT);
 
         WorkContinuation workContinuation = workManager.beginUniqueWork(IMAGE_MANIPULATION_WORK_NAME, ExistingWorkPolicy.KEEP, workRequest.build());
-        for (int i=1 ; i <= blurLevel ; i++) {
+        for (int i=2 ; i <= blurLevel ; i++) {
             OneTimeWorkRequest.Builder blurImageBuilder = new OneTimeWorkRequest.Builder(BlurImageWorker.class);
-
+            if (i == blurLevel)
+                blurImageBuilder.addTag(TAG_OUTPUT);
             workContinuation = workContinuation.then(blurImageBuilder.build());
         }
 
