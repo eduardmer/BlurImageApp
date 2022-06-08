@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class WorkerUtils {
 
-    static Bitmap blurBitmap(@NonNull Bitmap bitmap, @NonNull Context applicationContext) {
+    public static Bitmap blurBitmap(@NonNull Bitmap bitmap, @NonNull Context applicationContext) {
         RenderScript rsContext = null;
         try {
 

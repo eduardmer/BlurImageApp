@@ -1,18 +1,17 @@
 package com.blur_image_app;
 
 import static com.blur_image_app.Constants.KEY_IMAGE_URI;
-
+import static com.blur_image_app.Constants.SELECT_IMAGE;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.WorkInfo;
-
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-
 import com.blur_image_app.databinding.ActivityMainBinding;
-
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -48,6 +47,13 @@ public class MainActivity extends AppCompatActivity {
             else
                 showWorkInProgress();
         });
+
+        binding.imageView.setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, SELECT_IMAGE);
+        });
     }
 
     private void showWorkInProgress() {
@@ -73,5 +79,15 @@ public class MainActivity extends AppCompatActivity {
                 return 3;
         }
         return 1;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SELECT_IMAGE) {
+            assert data != null;
+            binding.imageView.setImageURI(data.getData());
+            viewModel.showSelectedImage(data);
+        }
     }
 }
