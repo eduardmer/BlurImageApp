@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.Worker;
@@ -33,22 +32,15 @@ public class BlurImageWorker extends Worker {
             }
 
             ContentResolver resolver = applicationContext.getContentResolver();
-            // Create a bitmap
             Bitmap picture = BitmapFactory.decodeStream(resolver.openInputStream(Uri.parse(resourceUri)));
-
-            // Blur the bitmap
             Bitmap output = WorkerUtils.blurBitmap(picture, applicationContext);
-
-            // Write bitmap to a temp file
             Uri outputUri = WorkerUtils.writeBitmapToFile(applicationContext, output);
-
             Data outputData = new Data.Builder()
                     .putString(KEY_IMAGE_URI, outputUri.toString())
                     .build();
 
             return Result.success(outputData);
         }catch (Throwable throwable){
-            Log.i("pergjigja", throwable.toString());
             return Result.failure();
         }
     }

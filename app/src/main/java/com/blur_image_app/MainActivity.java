@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         viewModel = new ViewModelProvider(this).get(BlurViewModel.class);
 
-        binding.goButton.setOnClickListener(v -> viewModel.applyBlur(getBlurLevel()));
+        viewModel.getSelectedImage().observe(this, imageUri -> binding.imageView.setImageURI(imageUri));
 
         viewModel.workInfo.observe(this, workInfos -> {
 
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             if (isFinished){
                 showWorkFinished();
                 String outputUri = workInfo.getOutputData().getString(KEY_IMAGE_URI);
-                if (!outputUri.isEmpty())
+                if (outputUri != null && !outputUri.isEmpty())
                     binding.imageView.setImageURI(Uri.parse(outputUri));
 
             }
@@ -48,12 +48,17 @@ public class MainActivity extends AppCompatActivity {
                 showWorkInProgress();
         });
 
+        binding.goButton.setOnClickListener(v -> viewModel.applyBlur(getBlurLevel()));
+
+        binding.cancelButton.setOnClickListener(v -> viewModel.cancelWork());
+
         binding.imageView.setOnClickListener(v -> {
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_PICK);
             intent.setType("image/*");
             startActivityForResult(intent, SELECT_IMAGE);
         });
+
     }
 
     private void showWorkInProgress() {
@@ -86,8 +91,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SELECT_IMAGE) {
             assert data != null;
-            binding.imageView.setImageURI(data.getData());
-            viewModel.showSelectedImage(data);
+            viewModel.setSelectedImage(data.getData());
         }
     }
 }
