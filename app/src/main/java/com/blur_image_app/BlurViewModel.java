@@ -5,9 +5,9 @@ import static com.blur_image_app.Constants.KEY_IMAGE_URI;
 import static com.blur_image_app.Constants.TAG_OUTPUT;
 import android.app.Application;
 import android.net.Uri;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -17,30 +17,29 @@ import androidx.work.WorkManager;
 import com.blur_image_app.workers.BlurImageWorker;
 import com.blur_image_app.workers.CleanTemporaryFilesWorker;
 import com.blur_image_app.workers.SaveImageWorker;
-
 import java.util.List;
-import javax.inject.Inject;
-import dagger.hilt.android.lifecycle.HiltViewModel;
 
-@HiltViewModel
-public class BlurViewModel extends ViewModel {
+public class BlurViewModel extends AndroidViewModel {
 
     private final WorkManager workManager;
     public final LiveData<List<WorkInfo>> workInfo;
     private final MutableLiveData<Uri> selectedImage;
+    private boolean canObserveWork;
     private Uri imageUri;
 
-    @Inject
     public BlurViewModel(Application application){
+        super(application);
         this.workManager = WorkManager.getInstance(application);
         workInfo = workManager.getWorkInfosByTagLiveData(TAG_OUTPUT);
         selectedImage = new MutableLiveData<>();
+        canObserveWork = false;
     }
 
     public void applyBlur(int blurLevel){
         if (imageUri == null)
             return;
 
+        canObserveWork = true;
         WorkContinuation workContinuation = workManager.beginUniqueWork(IMAGE_MANIPULATION_WORK_NAME, ExistingWorkPolicy.KEEP, OneTimeWorkRequest.from(CleanTemporaryFilesWorker.class));
 
         for (int i=1 ; i <= blurLevel ; i++) {
@@ -56,6 +55,10 @@ public class BlurViewModel extends ViewModel {
 
     public void cancelWork(){
         workManager.cancelUniqueWork(IMAGE_MANIPULATION_WORK_NAME);
+    }
+
+    public boolean canObserveWork(){
+        return canObserveWork;
     }
 
     public LiveData<Uri> getSelectedImage(){

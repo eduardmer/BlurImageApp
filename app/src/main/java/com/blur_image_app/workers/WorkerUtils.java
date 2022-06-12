@@ -21,10 +21,8 @@ public class WorkerUtils {
         RenderScript rsContext = null;
         try {
 
-            // Create the output bitmap
             Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
 
-            // Blur the image
             rsContext = RenderScript.create(applicationContext, RenderScript.ContextType.DEBUG);
             Allocation inAlloc = Allocation.createFromBitmap(rsContext, bitmap);
             Allocation outAlloc = Allocation.createTyped(rsContext, inAlloc.getType());

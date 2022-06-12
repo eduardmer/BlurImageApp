@@ -11,10 +11,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import com.blur_image_app.databinding.ActivityMainBinding;
-import dagger.hilt.android.AndroidEntryPoint;
+import android.widget.Toast;
 
-@AndroidEntryPoint
+import com.blur_image_app.databinding.ActivityMainBinding;
+
 public class MainActivity extends AppCompatActivity {
 
     BlurViewModel viewModel;
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.workInfo.observe(this, workInfos -> {
 
-            if (workInfos == null || workInfos.isEmpty())
+            if (workInfos == null || workInfos.isEmpty() || !viewModel.canObserveWork())
                 return;
 
             WorkInfo workInfo = workInfos.get(0);
@@ -40,8 +40,10 @@ public class MainActivity extends AppCompatActivity {
             if (isFinished){
                 showWorkFinished();
                 String outputUri = workInfo.getOutputData().getString(KEY_IMAGE_URI);
-                if (outputUri != null && !outputUri.isEmpty())
+                if (outputUri != null && !outputUri.isEmpty()) {
                     binding.imageView.setImageURI(Uri.parse(outputUri));
+                    Toast.makeText(this, getString(R.string.image_download), Toast.LENGTH_SHORT).show();
+                }
 
             }
             else
@@ -65,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         binding.progressBar.setVisibility(View.VISIBLE);
         binding.cancelButton.setVisibility(View.VISIBLE);
         binding.goButton.setVisibility(View.GONE);
-        binding.seeFileButton.setVisibility(View.GONE);
     }
 
     private void showWorkFinished() {
@@ -90,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SELECT_IMAGE) {
-            assert data != null;
-            viewModel.setSelectedImage(data.getData());
+            if (data != null)
+                viewModel.setSelectedImage(data.getData());
         }
     }
 }
