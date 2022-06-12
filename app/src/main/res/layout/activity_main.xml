@@ -66,13 +66,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <Button
-                        android:id="@+id/cancel_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/cancel_work"
-                        android:visibility="gone" />
-
                     <ProgressBar
                         android:id="@+id/progress_bar"
                         android:layout_width="wrap_content"
@@ -80,6 +73,14 @@
                         android:layout_gravity="center_horizontal"
                         android:indeterminate="true"
                         android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/cancel_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/cancel_work"
+                        android:visibility="gone" />
+
                 </LinearLayout>
 
                 <Button
